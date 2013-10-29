@@ -6,13 +6,19 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>OriginalMapMakingSupport</title>
+        <title>独自地図作成支援サービス</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
         <!-- build:css(.tmp) styles/main.css -->
         <link rel="stylesheet" href="styles/main.css">
         <!-- endbuild -->
+
+        <link rel="stylesheet" href="http://leafletjs.com/dist/leaflet.css" />
+        <!--[if lte IE 8]>
+            <link rel="stylesheet" href="http://leafletjs.com/dist/leaflet.ie.css" />
+        <![endif]-->
+
         <!-- build:js scripts/vendor/modernizr.js -->
         <script src="bower_components/modernizr/modernizr.js"></script>
         <!-- endbuild -->
@@ -22,47 +28,91 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
 
-
         <div class="container">
             <div class="header">
                 <ul class="nav nav-pills pull-right">
-                    <li class="active"><a href="#">Home</a></li>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li class="active"><a href="/">Home</a></li>
+                    <li><a href="//github.com/honjo2/OriginalMapMakingSupport">Github</a></li>
                 </ul>
-                <h3 class="text-muted">OriginalMapMakingSupport</h3>
-            </div>
-
-            <div class="jumbotron">
-                <h1>'Allo, 'Allo!</h1>
-                <p class="lead">Always a pleasure scaffolding your apps.</p>
-                <p><a class="btn btn-lg btn-success" href="#">Splendid!</a></p>
+                <h3 class="text-muted">独自地図作成支援サービス</h3>
             </div>
 
             <div class="row marketing">
-                <div class="col-lg-6">
-                    <h4>HTML5 Boilerplate</h4>
-                    <p>HTML5 Boilerplate is a professional front-end template for building fast, robust, and adaptable web apps or sites.</p>
 
-                    <h4>Bootstrap</h4>
-                    <p>Sleek, intuitive, and powerful mobile first front-end framework for faster and easier web development.</p>
-
-                    <h4>Modernizr</h4>
-                    <p>Modernizr is an open-source JavaScript library that helps you build the next generation of HTML5 and CSS3-powered websites.</p>
-
-
-                    <h4>RequireJS</h4>
-                    <p>RequireJS is a JavaScript file and module loader. It is optimized for in-browser use, but it can be used in other JavaScript environments, like Rhino and Node.</p>
-
+                <div id="mapdiv">
+                    <img id="map_center" src="images/map_center.gif" width="11px" height="11px" style="position: relative;z-index: 1" />
                 </div>
+                <input type="text" id="input1" style="width:280px;" readonly="readonly" />
+                <h1>何？</h1>
+                位置情報と連動した独自地図の作成を支援するサービスです。
+                例えば、<a href="https://itunes.apple.com/jp/app/dong-jing-xia-ting-san-bu/id356143653?mt=8">東京下町散歩</a>のようなアプリの独自地図の作成を支援します。
+                <h1>手順</h1>
+                <ol>
+                    <li>作成したい場所に地図を移動します</li>
+                    <li>
+                        下絵となる地図画像のサイズを指定します
+                        <select id="select1">
+                            <option value="3">768x768</option>
+                            <option value="5">1280x1280</option>
+                            <option value="7">1792x1792</option>
+                            <option value="9">2304x2304</option>
+                            <option value="11">2816x2816</option>
+                        </select>
+                    </li>
+                    <li>
+                        okを押します
+                        <input type="button" onClick="one()" value="ok"></input>
+                    </li>
+                    <li>
+                        以下に出力されたコマンドをコピペして実行します（要ImageMagick）<br />
+                        <textarea id="textarea1" cols="40" rows="10"></textarea>
+                    </li>
+                    <li>
+                        bigmapフォルダにcomp.pngが作成されます
+                    </li>
+                    <li>
+                        comp.pngを元に独自地図画像を作成します
+                    </li>
+                    <li>
+                        作成した独自地図画像をcomp.pngとします
+                    </li>
+                    <li>
+                        以下に出力されたコマンドをコピペして実行します<br />
+                        <textarea id="textarea2" cols="40" rows="10"></textarea>
+                    </li>
+                    <li>
+                        タイル画像が作成されます
+                    </li>
+                    <li>
+                        アプリのひな形をgit cloneします→ <a href="https://github.com/honjo2/OriginalMapScaffold">https://github.com/honjo2/OriginalMapScaffold</a>
+                    </li>
+                    <li>
+                        タイル画像全てをプロジェクトにコピーします
+                    </li>
+                    <li>
+                        ViewControllerのkAPIKey,kZoom,kCoordinateを適宜変更します
+                    </li>
+                    <li>
+                        シミュレータで確認します
+                    </li>
+                </ol>
+                <p>※ Web版のひな形はこちら→ <a href="https://github.com/honjo2/OriginalMapScaffoldForWeb">https://github.com/honjo2/OriginalMapScaffoldForWeb</a></p>
+                <br /><br />
+
+                <!-- ツイートボタン -->
+                <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://honjo2.github.io/OriginalMapMakingSupport/" data-via="honjo2" data-lang="ja">ツイート</a>
+                <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+                <!-- end -->
+
             </div>
 
             <div class="footer">
-                <p>♥ from the Yeoman team</p>
+                <p>2013.04.21 <a href="https://twitter.com/honjo2">@honjo2</a></p>
             </div>
 
         </div>
 
+        <script src="http://leafletjs.com/dist/leaflet.js"></script>
 
         <!-- build:js scripts/vendor.js -->
         <!-- bower:js -->
@@ -77,11 +127,13 @@
             e=o.createElement(i);r=o.getElementsByTagName(i)[0];
             e.src='//www.google-analytics.com/analytics.js';
             r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
-            ga('create','UA-XXXXX-X');ga('send','pageview');
+            ga('create','UA-45242752-1');ga('send','pageview');
         </script>
 
         <!-- build:js scripts/main.js -->
         <script data-main="scripts/main" src="bower_components/requirejs/require.js"></script>
         <!-- endbuild -->
+
+        
 </body>
 </html>
