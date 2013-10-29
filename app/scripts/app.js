@@ -5,28 +5,6 @@ define([], function () {
     return '';
 });
 
-var mapdivName = 'mapdiv';
-
-// var width = innerWidth * 0.8;
-var height = window.innerHeight * 0.6;
-
-$('#' + mapdivName).css({height: height});
-
-var map = L.map(mapdivName).setView([35.7, 139.7], 13);
-L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
-
-var tmpleft = $('#' + mapdivName).width() / 2 - 5;
-var tmptop = height / 2 - 5;
-$('#map_center').css({left: tmpleft, top: tmptop});
-
-map.on('move', function(e) {
-	'use strict';
-	var center = map.getCenter();
-	$('#input1').val(center.lat + ',' + center.lng + ',' + map._zoom);
-});
-
 var Point = function(x, y) {
     'use strict';
     this.x = x;
@@ -144,8 +122,29 @@ Map2.prototype.metersPerPixel = function() {
 // var coordinate = map.pixelToCoordinate(point);
 // console.log(coordinate); // Coordinate {latitude: 139.3, longitude: 35.29999999999999}
 
-function one() {
+var mapdivName = 'mapdiv';
 
+// var width = innerWidth * 0.8;
+var height = window.innerHeight * 0.6;
+
+$('#' + mapdivName).css({height: height});
+
+var map = L.map(mapdivName).setView([35.7, 139.7], 13);
+L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+var tmpleft = $('#' + mapdivName).width() / 2 - 5;
+var tmptop = height / 2 - 5;
+$('#map_center').css({left: tmpleft, top: tmptop});
+
+map.on('move', function() {
+    'use strict';
+    var center = map.getCenter();
+    $('#input1').val(center.lat + ',' + center.lng + ',' + map._zoom);
+});
+
+$('#ok').click(function() {
     'use strict';
 
     var x, y;
@@ -196,4 +195,4 @@ function one() {
         }
     }
     $('#textarea2').html(html2);
-}
+});
