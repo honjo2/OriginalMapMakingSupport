@@ -8,7 +8,7 @@ define([], function () {
 var mapdivName = 'mapdiv';
 
 // var width = innerWidth * 0.8;
-var height = innerHeight * 0.6;
+var height = window.innerHeight * 0.6;
 
 $('#' + mapdivName).css({height: height});
 
@@ -19,64 +19,46 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 
 var tmpleft = $('#' + mapdivName).width() / 2 - 5;
 var tmptop = height / 2 - 5;
-$("#map_center").css({left: tmpleft, top: tmptop});
+$('#map_center').css({left: tmpleft, top: tmptop});
 
 map.on('move', function(e) {
+	'use strict';
 	var center = map.getCenter();
-	$("#input1").val(center.lat + "," + center.lng + "," + map._zoom);
+	$('#input1').val(center.lat + ',' + center.lng + ',' + map._zoom);
 });
 
-function one() {
+var Point = function(x, y) {
+    'use strict';
+    this.x = x;
+    this.y = y;
+};
 
-    var m = new Map();
-    m.zoom = map._zoom;
+// var ProjectedPoint = function(x, y) {
+//     'use strict';
+//     this.x = x;
+//     this.y = y;
+// };
 
-    var center = map.getCenter();
+var Coordinate = function(latitude, longitude) {
+    'use strict';
+    this.latitude = latitude;
+    this.longitude = longitude;
+};
 
-    var point = m.coordinateToPixel(new Coordinate(center.lat, center.lng));
+var Size = function(width, height) {
+    'use strict';
+    this.width = width;
+    this.height = height;
+};
 
-    var indexX = Math.floor(point.x / 256);
-    var indexY = Math.floor(point.y / 256);
+var Rect = function(x, y, width, height) {
+    'use strict';
+    this.origin = new Point(x, y);
+    this.size = new Size(width, height);
+};
 
-    var length = parseInt($("#select1").val(), 10);
-
-    var leftTopX = indexX - Math.floor(length / 2);
-    var leftTopY = indexY - Math.floor(length / 2);
-
-    var html = "mkdir bigmap;cd bigmap; \\\n";
-    for (var x = leftTopX; x < leftTopX + length; x++) {
-        html += "mkdir " + x + "; \\\n";
-        html += "cd " + x + "; \\\n";
-        html += "curl -O http://tile.osm.org/" + map._zoom + "/" + x + "/[" + leftTopY + "-" + (leftTopY+length-1) + "].png; \\\n";
-        html += "convert -append ";
-        for (var y = leftTopY; y < leftTopY + length; y++) {
-            html += y + ".png ";
-        }
-        html += "tmp.png; \\\n";
-        html += "cd ..; \\\n";
-    }
-    html += "convert +append ";
-    for (var x = leftTopX; x < leftTopX + length; x++) {
-        html += x + "/tmp.png ";
-    }
-    html += "comp.png; \\\n";
-    html += "rm -rf";
-    for (var x = leftTopX; x < leftTopX + length; x++) {
-        html += " " + x;
-    }
-    html += "; cd ..";
-    $("#textarea1").html(html);
-
-    var html2 = "";
-    for (var y = 0; y < length; y++) {
-        for (var x = 0; x < length; x++) {
-            html2 += "convert -crop 256x256+" + (256 * x) + "+" + (256 * y) + " comp.png " + map._zoom + "-" + (leftTopX + x) + "-" + (leftTopY + y) + ".png; \\\n";
-        }
-    }
-    $("#textarea2").html(html2);
-}
-
-var Map = function() {
+var Map2 = function() {
+    'use strict';
     this.zoom = 0;
     this.tileLength = 256;
     this.projectedRect = new Rect(-20037508.34, -20037508.34, 20037508.34 * 2, 20037508.34 * 2);
@@ -84,19 +66,22 @@ var Map = function() {
 
 // public
 
-Map.prototype.coordinateToPixel = function(coordinate) {
+Map2.prototype.coordinateToPixel = function(coordinate) {
+    'use strict';
     var projectedPoint = this.coordinateToProjectedPoint(coordinate);
     return this.projectedPointToPixel(projectedPoint);
 };
 
-Map.prototype.pixelToCoordinate = function(point) {
+Map2.prototype.pixelToCoordinate = function(point) {
+    'use strict';
     var projectedPoint = this.pixelToProjectedPoint(point);
     return this.projectedPointToCoordinate(projectedPoint);
 };
 
 // protected
 
-Map.prototype.projectedPointToCoordinate = function(projectedPoint) {
+Map2.prototype.projectedPointToCoordinate = function(projectedPoint) {
+    'use strict';
     projectedPoint.x /= 6378137.0;
     projectedPoint.y /= 6378137.0;
   
@@ -106,7 +91,8 @@ Map.prototype.projectedPointToCoordinate = function(projectedPoint) {
     return coordinate;
 };
 
-Map.prototype.coordinateToProjectedPoint = function(coordinate) {
+Map2.prototype.coordinateToProjectedPoint = function(coordinate) {
+    'use strict';
     var d = Math.PI / 180.0;
     var max = 85.0511287798;
     var lat = Math.max(Math.min(max, coordinate.latitude), -max);
@@ -120,14 +106,16 @@ Map.prototype.coordinateToProjectedPoint = function(coordinate) {
 
 // private
 
-Map.prototype.projectedPointToPixel = function(projectedPoint) {
+Map2.prototype.projectedPointToPixel = function(projectedPoint) {
+    'use strict';
     var metersPerPixel = this.metersPerPixel();
     var normalizedProjectedPoint = new Point(projectedPoint.x + Math.abs(this.projectedRect.origin.x), projectedPoint.y + Math.abs(this.projectedRect.origin.y));
     var point = new Point((normalizedProjectedPoint.x / metersPerPixel), (this.contentSize().height - (normalizedProjectedPoint.y / metersPerPixel)));
     return point;
 };
 
-Map.prototype.pixelToProjectedPoint = function(point) {
+Map2.prototype.pixelToProjectedPoint = function(point) {
+    'use strict';
     var metersPerPixel = this.metersPerPixel();
     var normalizedProjectedPointx = point.x * metersPerPixel - Math.abs(this.projectedRect.origin.x);
     var normalizedProjectedPointy = ((this.contentSize().height - point.y) * metersPerPixel) - Math.abs(this.projectedRect.origin.y);
@@ -136,41 +124,18 @@ Map.prototype.pixelToProjectedPoint = function(point) {
     return normalizedProjectedPoint;
 };
 
-Map.prototype.contentSize = function() {
+Map2.prototype.contentSize = function() {
+    'use strict';
     var contentLength = Math.pow(2, this.zoom) * this.tileLength;
     return new Size(contentLength, contentLength);
 };
 
-Map.prototype.metersPerPixel = function() {
+Map2.prototype.metersPerPixel = function() {
+    'use strict';
     return this.projectedRect.size.width / this.contentSize().width;
 };
 
-var Point = function(x, y) {
-    this.x = x;
-    this.y = y;
-};
-
-var ProjectedPoint = function(x, y) {
-    this.x = x;
-    this.y = y;
-};
-
-var Coordinate = function(latitude, longitude) {
-    this.latitude = latitude;
-    this.longitude = longitude;
-};
-
-var Size = function(width, height) {
-    this.width = width;
-    this.height = height;
-};
-
-var Rect = function(x, y, width, height) {
-    this.origin = new Point(x, y);
-    this.size = new Size(width, height);
-};
-
-// var map = new Map();
+// var map = new Map2();
 // map.zoom = 15;
 
 // var point = map.coordinateToPixel(new Coordinate(35.3, 139.3));
@@ -178,3 +143,57 @@ var Rect = function(x, y, width, height) {
 
 // var coordinate = map.pixelToCoordinate(point);
 // console.log(coordinate); // Coordinate {latitude: 139.3, longitude: 35.29999999999999}
+
+function one() {
+
+    'use strict';
+
+    var x, y;
+
+    var m = new Map2();
+    m.zoom = map._zoom;
+
+    var center = map.getCenter();
+
+    var point = m.coordinateToPixel(new Coordinate(center.lat, center.lng));
+
+    var indexX = Math.floor(point.x / 256);
+    var indexY = Math.floor(point.y / 256);
+
+    var length = parseInt($('#select1').val(), 10);
+
+    var leftTopX = indexX - Math.floor(length / 2);
+    var leftTopY = indexY - Math.floor(length / 2);
+
+    var html = 'mkdir bigmap;cd bigmap; \\\n';
+    for (x = leftTopX; x < leftTopX + length; x++) {
+        html += 'mkdir ' + x + '; \\\n';
+        html += 'cd ' + x + '; \\\n';
+        html += 'curl -O http://tile.osm.org/' + map._zoom + '/' + x + '/[' + leftTopY + '-' + (leftTopY+length-1) + '].png; \\\n';
+        html += 'convert -append ';
+        for (y = leftTopY; y < leftTopY + length; y++) {
+            html += y + '.png ';
+        }
+        html += 'tmp.png; \\\n';
+        html += 'cd ..; \\\n';
+    }
+    html += 'convert +append ';
+    for (x = leftTopX; x < leftTopX + length; x++) {
+        html += x + '/tmp.png ';
+    }
+    html += 'comp.png; \\\n';
+    html += 'rm -rf';
+    for (x = leftTopX; x < leftTopX + length; x++) {
+        html += ' ' + x;
+    }
+    html += '; cd ..';
+    $('#textarea1').html(html);
+
+    var html2 = '';
+    for (y = 0; y < length; y++) {
+        for (x = 0; x < length; x++) {
+            html2 += 'convert -crop 256x256+' + (256 * x) + '+' + (256 * y) + ' comp.png ' + map._zoom + '-' + (leftTopX + x) + '-' + (leftTopY + y) + '.png; \\\n';
+        }
+    }
+    $('#textarea2').html(html2);
+}
